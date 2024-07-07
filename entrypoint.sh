@@ -21,6 +21,10 @@ if [ ! -e "/opt/wgcf-profile.conf" ]; then
         *) echo "Unsupported architecture"; exit 1 ;;
     esac
     URL=$(curl -fsSL ${TAR} | grep 'browser_download_url' | cut -d'"' -f4 | grep linux | grep "${_ARCH}")
+    # check $GH_MIRROR if exist and length great than 0
+    if [ -n "$GH_MIRROR" ] && [ ${#GH_MIRROR} -gt 0 ]; then
+        URL=$(echo $URL | sed "s/github.com/$GH_MIRROR/")
+    fi
     curl -fsSL "${URL}" -o ./wgcf && chmod +x ./wgcf && mv ./wgcf /usr/bin
     wgcf register --accept-tos && wgcf update && wgcf generate && mv wgcf-profile.conf /opt
     sed -i "/\[Interface\]/a PostDown = ip -6 rule delete from ${_IPv6}  lookup main" /opt/wgcf-profile.conf
